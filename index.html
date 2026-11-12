@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d6336c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gujarati Kids">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ગુજરાતી શબ્દો – Gujarati Words</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans+Gujarati:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<nav class="top">
+  <a class="on" href="index.html">🔤 શબ્દો Words</a>
+  <a href="sentences.html">💬 વાક્યો Sentences</a>
+</nav>
+<div class="chips" id="chips"></div>
+<main>
+  <div class="stage">
+    <button class="nav" id="prev" aria-label="Previous">◀</button>
+    <div class="card" id="card">
+      <div class="emoji" id="emoji"></div>
+      <div>
+        <div class="gu" id="gu"></div>
+        <div class="tr" id="tr"></div>
+      </div>
+      <div class="en" id="en"></div>
+      <div class="btns">
+        <button class="say g" id="sayGu">🔊 ગુજરાતી</button>
+        <button class="say e" id="sayEn">🔊 English</button>
+      </div>
+    </div>
+    <button class="nav" id="next" aria-label="Next">▶</button>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="dots" id="dots"></div>
+  <div class="tools"><button class="tool" id="shuffle">🔀 Shuffle</button><button class="tool" id="auto">▶️ Auto-play</button></div>
+  <div class="note" id="voiceNote" hidden>ℹ️ For parents: this device has no Gujarati voice installed, so the app is using online speech (needs internet). To work offline, install a Gujarati voice in your device's text-to-speech settings (Android: Google Text-to-speech → Gujarati).</div>
+</main>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let cat = 'actions', list = [], i = 0, autoTimer = null;
+const catOf = id => CATS.find(c => c.id === id);
+
+function buildChips() {
+  $('chips').innerHTML = [{ id: 'all', icon: '🌈', gu: 'બધા', en: 'All' }, ...CATS]
+    .map(c => `<button class="chip" data-id="${c.id}">${c.icon} ${c.gu}<small>${c.en}</small></button>`).join('');
+  $('chips').onclick = e => { const b = e.target.closest('.chip'); if (b) setCat(b.dataset.id); };
+}
+function setCat(id) {
+  cat = id;
+  list = id === 'all' ? CATS.flatMap(c => WORDS[c.id].map(w => ({ ...w, cat: c.id }))) : WORDS[id].map(w => ({ ...w, cat: id }));
+  i = 0;
+  document.querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  const on = document.querySelector('.chip.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  render(false);
+}
+function render(speak = true) {
+  const w = list[i], c = catOf(w.cat);
+  document.documentElement.style.setProperty('--c1', c.color[0]);
+  document.documentElement.style.setProperty('--c2', c.color[1]);
+  const em = $('emoji');
+  em.textContent = w.e; em.className = 'emoji ' + (w.a || c.anim);
+  $('gu').textContent = w.gu; $('tr').textContent = w.tr; $('en').textContent = w.en;
+  $('count').textContent = `${i + 1} / ${list.length}`;
+  $('dots').innerHTML = list.length <= 24 ? list.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('') : '';
+  const card = $('card'); card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+  if (speak) sayBoth();
+}
+const sayGu = () => Speak.play([{ t: list[i].gu, l: 'gu' }]);
+const sayEn = () => Speak.play([{ t: list[i].en, l: 'en' }]);
+const sayBoth = () => Speak.play([{ t: list[i].gu, l: 'gu' }, { t: list[i].en, l: 'en' }]);
+function go(d) { i = (i + d + list.length) % list.length; FX.pop(); render(true); }
+
+$('next').onclick = () => go(1);
+$('prev').onclick = () => go(-1);
+$('sayGu').onclick = e => { e.stopPropagation(); sayGu(); FX.confetti(e.clientX, e.clientY); };
+$('sayEn').onclick = e => { e.stopPropagation(); sayEn(); FX.confetti(e.clientX, e.clientY); };
+$('card').onclick = e => { sayBoth(); FX.pop(); FX.confetti(e.clientX, e.clientY); };
+$('shuffle').onclick = () => { list.sort(() => Math.random() - .5); i = 0; render(true); };
+$('auto').onclick = () => {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; $('auto').textContent = '▶️ Auto-play'; return; }
+  $('auto').textContent = '⏸️ Stop';
+  autoTimer = setInterval(() => go(1), 5000);
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(1); else if (e.key === 'ArrowLeft') go(-1);
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sayBoth(); }
+});
+let sx = null;
+$('card').addEventListener('touchstart', e => sx = e.touches[0].clientX, { passive: true });
+$('card').addEventListener('touchend', e => {
+  if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+  if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
+});
+
+buildChips(); setCat('actions'); voiceNote();
+</script>
+<script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

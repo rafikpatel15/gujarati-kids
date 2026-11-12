@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d6336c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gujarati Kids">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ગુજરાતી વાક્યો – Gujarati Sentences</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans+Gujarati:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<nav class="top">
+  <a href="index.html">🔤 શબ્દો Words</a>
+  <a class="on" href="sentences.html">💬 વાક્યો Sentences</a>
+</nav>
+<div class="mode">
+  <button id="mLearn" class="on">📖 Learn</button>
+  <button id="mPlay">🎮 Play game</button>
+</div>
+<main>
+  <!-- LEARN -->
+  <section id="learn">
+    <div class="stage">
+      <button class="nav" id="prev" aria-label="Previous">◀</button>
+      <div class="card" id="card">
+        <div class="emoji" id="emoji"></div>
+        <div>
+          <div class="gu words" id="gu"></div>
+          <div class="hint">👆 tap any word to hear it</div>
+          <div class="tr" id="tr"></div>
+        </div>
+        <div class="en" id="en"></div>
+        <div class="btns">
+          <button class="say g" id="sayGu">🔊 ગુજરાતી</button>
+          <button class="say e" id="sayEn">🔊 English</button>
+        </div>
+      </div>
+      <button class="nav" id="next" aria-label="Next">▶</button>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="tools"><button class="tool" id="shuffle">🔀 Shuffle</button></div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" hidden>
+    <div class="count score" id="score"></div>
+    <div class="card" id="qcard" style="margin-top:10px">
+      <div class="hint" style="font-size:18px">👂 Listen and tap the right picture!</div>
+      <button class="say g" id="again" style="font-size:26px;padding:16px 30px">🔊 સાંભળો Listen</button>
+      <div class="opts" id="opts"></div>
+      <div class="en" id="qen" style="min-height:48px;font-size:34px"></div>
+    </div>
+  </section>
+  <div class="note" id="voiceNote" hidden>ℹ️ For parents: this device has no Gujarati voice installed, so the app is using online speech (needs internet). To work offline, install a Gujarati voice in your device's text-to-speech settings (Android: Google Text-to-speech → Gujarati).</div>
+</main>
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const COLORS = [['#ff9a9e', '#fecfef'], ['#84fab0', '#8fd3f4'], ['#f6d365', '#fda085'], ['#a18cd1', '#fbc2eb'], ['#96fbc4', '#f9f586'], ['#c2e9fb', '#a1c4fd']];
+const ANIMS = ['bounce', 'wiggle', 'sway', 'float', 'pulse', 'jump'];
+let list = SENTENCES.slice(), i = 0;
+const setBg = k => { const c = COLORS[k % COLORS.length]; document.documentElement.style.setProperty('--c1', c[0]); document.documentElement.style.setProperty('--c2', c[1]); };
+
+/* ---------- LEARN ---------- */
+function render(speak = true) {
+  const s = list[i];
+  setBg(i);
+  $('emoji').textContent = s.e; $('emoji').className = 'emoji ' + ANIMS[i % ANIMS.length];
+  $('gu').innerHTML = s.gu.split(' ').map(w => `<span class="w">${w}</span>`).join('');
+  $('tr').textContent = s.tr; $('en').textContent = s.en;
+  $('count').textContent = `${i + 1} / ${list.length}`;
+  const c = $('card'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+  if (speak) sayBoth();
+}
+const sayBoth = () => Speak.play([{ t: list[i].gu, l: 'gu' }, { t: list[i].en, l: 'en' }]);
+function go(d) { i = (i + d + list.length) % list.length; FX.pop(); render(true); }
+$('next').onclick = () => go(1);
+$('prev').onclick = () => go(-1);
+$('sayGu').onclick = e => { e.stopPropagation(); Speak.play([{ t: list[i].gu, l: 'gu' }]); FX.confetti(e.clientX, e.clientY); };
+$('sayEn').onclick = e => { e.stopPropagation(); Speak.play([{ t: list[i].en, l: 'en' }]); FX.confetti(e.clientX, e.clientY); };
+$('gu').onclick = e => {
+  const w = e.target.closest('.w'); if (!w) return;
+  e.stopPropagation(); FX.pop(); FX.confetti(e.clientX, e.clientY, ['✨', '⭐']);
+  w.classList.add('hot'); setTimeout(() => w.classList.remove('hot'), 400);
+  Speak.play([{ t: w.textContent.replace(/[?!,]/g, ''), l: 'gu' }]);
+};
+$('card').onclick = e => { sayBoth(); FX.confetti(e.clientX, e.clientY); };
+$('shuffle').onclick = () => { list.sort(() => Math.random() - .5); i = 0; render(true); };
+document.addEventListener('keydown', e => {
+  if ($('learn').hidden) return;
+  if (e.key === 'ArrowRight') go(1); else if (e.key === 'ArrowLeft') go(-1);
+});
+let sx = null;
+$('card').addEventListener('touchstart', e => sx = e.touches[0].clientX, { passive: true });
+$('card').addEventListener('touchend', e => {
+  if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+  if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
+});
+
+/* ---------- PLAY ---------- */
+const ROUNDS = 8;
+let q = [], round = 0, stars = 0, current = null, locked = false;
+const shuffle = a => a.sort(() => Math.random() - .5);
+
+function startGame() {
+  q = shuffle(SENTENCES.slice()).slice(0, ROUNDS); round = 0; stars = 0; nextQ();
+}
+function scoreText() { return `⭐ ${stars}   •   ${Math.min(round + 1, ROUNDS)} / ${ROUNDS}`; }
+function nextQ() {
+  if (round >= ROUNDS) return finish();
+  locked = false; current = q[round];
+  setBg(round);
+  const wrong = shuffle(SENTENCES.filter(s => s.e !== current.e)).slice(0, 2);
+  const opts = shuffle([current, ...wrong]);
+  $('score').textContent = scoreText();
+  $('qen').textContent = '';
+  $('opts').innerHTML = opts.map(o => `<button class="opt" data-e="${o.e}">${o.e}</button>`).join('');
+  const c = $('qcard'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+  Speak.play([{ t: current.gu, l: 'gu' }]);
+}
+$('again').onclick = () => current && Speak.play([{ t: current.gu, l: 'gu' }]);
+$('opts').onclick = e => {
+  const b = e.target.closest('.opt'); if (!b || locked) return;
+  if (b.dataset.e === current.e) {
+    locked = true; b.classList.add('ok'); FX.good(); FX.confetti(e.clientX, e.clientY); stars++;
+    $('qen').textContent = '✅ ' + current.en;
+    $('score').textContent = scoreText();
+    Speak.play([{ t: current.en, l: 'en' }]);
+    setTimeout(() => { round++; nextQ(); }, 2200);
+  } else {
+    b.classList.add('no'); FX.bad();
+    setTimeout(() => b.classList.remove('no'), 500);
+    Speak.play([{ t: current.gu, l: 'gu' }]);
+  }
+};
+function finish() {
+  setBg(2);
+  $('score').textContent = '';
+  $('opts').innerHTML = '';
+  $('qen').innerHTML = '';
+  const full = stars === ROUNDS;
+  $('opts').innerHTML = `<div style="grid-column:1/-1"><div class="big">${full ? '🏆' : '🎉'}</div>
+    <div class="en">${'⭐'.repeat(stars)}</div>
+    <div class="gu" style="font-size:44px">શાબાશ!</div><div class="tr">Shabaash! Well done!</div>
+    <div class="btns"><button class="say g" id="replay">🔁 ફરી રમો Play again</button></div></div>`;
+  $('replay').onclick = startGame;
+  FX.good(); FX.confetti(innerWidth / 2, innerHeight / 3);
+  Speak.play([{ t: 'શાબાશ!', l: 'gu' }, { t: 'Well done!', l: 'en' }]);
+}
+
+/* ---------- mode switch ---------- */
+function mode(m) {
+  Speak.stop();
+  $('learn').hidden = m !== 'learn'; $('play').hidden = m !== 'play';
+  $('mLearn').classList.toggle('on', m === 'learn'); $('mPlay').classList.toggle('on', m === 'play');
+  if (m === 'play') startGame(); else render(false);
+}
+$('mLearn').onclick = () => mode('learn');
+$('mPlay').onclick = () => mode('play');
+
+render(false); voiceNote();
+</script>
+<script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
