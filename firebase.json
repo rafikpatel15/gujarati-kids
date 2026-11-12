@@ -1,7 +1,7 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "*.md"],
+    "ignore": ["firebase.json", ".git", ".git/**", ".firebase", ".firebase/**", "**/.*", "**/node_modules/**", "*.md"],
     "headers": [
       { "source": "sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
     ]
