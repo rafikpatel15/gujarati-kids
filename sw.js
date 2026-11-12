@@ -1,5 +1,5 @@
 // Offline cache so the app works without internet once opened
-const CACHE = 'guj-kids-v1';
+const CACHE = 'guj-kids-v2';
 const FILES = ['./', 'index.html', 'sentences.html', 'app.css', 'data.js', 'common.js', 'icon.svg', 'manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

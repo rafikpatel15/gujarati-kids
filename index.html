@@ -18,6 +18,7 @@
 <nav class="top">
   <a class="on" href="index.html">🔤 શબ્દો Words</a>
   <a href="sentences.html">💬 વાક્યો Sentences</a>
+  <button class="top-toggle" id="orderBtn" aria-label="Switch language order">⇅ EN/ગુ</button>
 </nav>
 <div class="chips" id="chips"></div>
 <main>
@@ -25,7 +26,7 @@
     <button class="nav" id="prev" aria-label="Previous">◀</button>
     <div class="card" id="card">
       <div class="emoji" id="emoji"></div>
-      <div>
+      <div class="gblock">
         <div class="gu" id="gu"></div>
         <div class="tr" id="tr"></div>
       </div>
@@ -76,7 +77,7 @@ function render(speak = true) {
 }
 const sayGu = () => Speak.play([{ t: list[i].gu, l: 'gu' }]);
 const sayEn = () => Speak.play([{ t: list[i].en, l: 'en' }]);
-const sayBoth = () => Speak.play([{ t: list[i].gu, l: 'gu' }, { t: list[i].en, l: 'en' }]);
+const sayBoth = () => Speak.play(Order.both(list[i].gu, list[i].en));
 function go(d) { i = (i + d + list.length) % list.length; FX.pop(); render(true); }
 
 $('next').onclick = () => go(1);
@@ -101,7 +102,7 @@ $('card').addEventListener('touchend', e => {
   if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
 });
 
-buildChips(); setCat('actions'); voiceNote();
+buildChips(); setCat('actions'); Order.bind(document.getElementById('orderBtn')); voiceNote();
 </script>
 <script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js");</script>
 </body>

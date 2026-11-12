@@ -136,3 +136,16 @@ button, a { touch-action: manipulation; }
 @media (max-height: 520px) and (orientation: landscape) {
   .emoji { font-size: 90px; } .card { min-height: 0; } .gu { font-size: 40px; } .en { font-size: 28px; }
 }
+
+/* language order: English on top by default, switchable */
+.top-toggle { border: 0; border-radius: 40px; padding: 8px 14px; font: 800 14px inherit; font-family: inherit; background: #fff; color: #3b2a50; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.18); min-height: 44px; }
+.top { flex-wrap: wrap; align-items: center; }
+.card .emoji { order: 0; }
+.card .en { order: 1; }
+.card .gblock { order: 2; }
+.card .btns { order: 3; }
+.card:not(.q) .say { }
+body:not(.en-first) .card .gblock { order: 1; }
+body:not(.en-first) .card .en { order: 2; }
+body.en-first .btns .say.e { order: 0; }
+body.en-first .btns .say.g { order: 1; }

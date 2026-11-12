@@ -18,6 +18,7 @@
 <nav class="top">
   <a href="index.html">🔤 શબ્દો Words</a>
   <a class="on" href="sentences.html">💬 વાક્યો Sentences</a>
+  <button class="top-toggle" id="orderBtn" aria-label="Switch language order">⇅ EN/ગુ</button>
 </nav>
 <div class="mode">
   <button id="mLearn" class="on">📖 Learn</button>
@@ -30,7 +31,7 @@
       <button class="nav" id="prev" aria-label="Previous">◀</button>
       <div class="card" id="card">
         <div class="emoji" id="emoji"></div>
-        <div>
+        <div class="gblock">
           <div class="gu words" id="gu"></div>
           <div class="hint">👆 tap any word to hear it</div>
           <div class="tr" id="tr"></div>
@@ -79,7 +80,7 @@ function render(speak = true) {
   const c = $('card'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
   if (speak) sayBoth();
 }
-const sayBoth = () => Speak.play([{ t: list[i].gu, l: 'gu' }, { t: list[i].en, l: 'en' }]);
+const sayBoth = () => Speak.play(Order.both(list[i].gu, list[i].en));
 function go(d) { i = (i + d + list.length) % list.length; FX.pop(); render(true); }
 $('next').onclick = () => go(1);
 $('prev').onclick = () => go(-1);
@@ -152,7 +153,7 @@ function finish() {
     <div class="btns"><button class="say g" id="replay">🔁 ફરી રમો Play again</button></div></div>`;
   $('replay').onclick = startGame;
   FX.good(); FX.confetti(innerWidth / 2, innerHeight / 3);
-  Speak.play([{ t: 'શાબાશ!', l: 'gu' }, { t: 'Well done!', l: 'en' }]);
+  Speak.play(Order.both('શાબાશ!', 'Well done!'));
 }
 
 /* ---------- mode switch ---------- */
@@ -165,7 +166,7 @@ function mode(m) {
 $('mLearn').onclick = () => mode('learn');
 $('mPlay').onclick = () => mode('play');
 
-render(false); voiceNote();
+render(false); Order.bind(document.getElementById('orderBtn')); voiceNote();
 </script>
 <script>if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js");</script>
 </body>

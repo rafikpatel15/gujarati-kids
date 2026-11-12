@@ -117,3 +117,19 @@ function voiceNote() {
     if (n && !Speak.hasGujarati()) n.hidden = false;
   }, 1500);
 }
+
+// Which language is shown on top / spoken first (saved on this device)
+const Order = (() => {
+  let enFirst = true;
+  try { const s = localStorage.getItem('enFirst'); if (s !== null) enFirst = s === '1'; } catch (e) { }
+  const apply = () => document.body.classList.toggle('en-first', enFirst);
+  apply();
+  return {
+    both: (gu, en) => enFirst ? [{ t: en, l: 'en' }, { t: gu, l: 'gu' }] : [{ t: gu, l: 'gu' }, { t: en, l: 'en' }],
+    bind(btn) {
+      const label = () => btn.textContent = enFirst ? '🔤 English ⬆ ગુજરાતી ⬇' : '🔤 ગુજરાતી ⬆ English ⬇';
+      label();
+      btn.onclick = () => { enFirst = !enFirst; try { localStorage.setItem('enFirst', enFirst ? '1' : '0'); } catch (e) { } apply(); label(); };
+    }
+  };
+})();
